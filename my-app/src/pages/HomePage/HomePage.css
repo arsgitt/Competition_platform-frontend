@@ -1,0 +1,53 @@
+/* App.css */
+
+.home{
+    text-align: center;
+    font-family: Arial, sans-serif;
+    background-image: url('/home.jpg');
+    background-size: cover;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.home-header {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    color: white;
+    border-radius: 10px;
+}
+
+h1 {
+    font-size: 2em;
+    margin: 0.5em 0;
+}
+
+p {
+    font-size: 1.2em;
+    margin: 0.5em 0;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 1em;
+    margin: 0 10px;
+    background-color: #61dafb;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: black;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: blue;
+}

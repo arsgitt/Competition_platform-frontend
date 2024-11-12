@@ -1,0 +1,151 @@
+.search-form {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.search-form input[type="text"] {
+    font-family: 'Roboto', sans-serif;
+    width: 800px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.search-form input[type="submit"] {
+    font-family: 'Roboto', sans-serif;
+    height: 40px;
+    width: 70px;
+    border-radius: 5px;
+}
+
+.title {
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    font-size: 50px;
+    margin-left: 130px;
+    color: black;
+    margin-top: 70px;
+}
+
+.player-list {
+    display: grid;
+    grid-template-columns: 440px 440px 440px;
+    padding: 0;
+    margin-left: 100px;
+}
+
+.card {
+    position: relative;
+    width: 296px;
+    height: 370px;
+}
+
+.player-img {
+    position: absolute;
+    width: 296px;
+    height: 272px;
+    left: 0px;
+    top: 0px;
+}
+
+.player-name {
+    text-decoration: none;
+    position: absolute;
+    width: 200px;
+    height: 29px;
+    left: 25px;
+    top: 280px;
+    font-family: 'Inria Serif';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 29px;
+    color: #000000;
+}
+
+.player-position {
+    position: absolute;
+    width: 145px;
+    height: 29px;
+    left: 25px;
+    top: 309px;
+    font-family: 'Inria Serif';
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 29px;
+    color: #000000;
+}
+
+.player-number {
+    position: absolute;
+    width: 40px;
+    height: 58px;
+    left: 243px;
+    top: 280px;
+    font-family: 'Inria Serif';
+    font-style: italic;
+    font-weight: 400;
+    font-size: 40px;
+    line-height: 58px;
+    color: #250CB5;
+}
+
+.add-button {
+    position: absolute;
+    left: 0px;
+    top: 330px;
+    width: 270px;
+    background: white;
+    color: #060F1E;
+    border-width: 0.5px;
+    margin-left: 12px;
+    margin-top: 15px;
+    border-radius: 10px;
+    transition: 0.5s;
+}
+
+.no-results {
+    font-family: 'Roboto', sans-serif;
+    color: black;
+    list-style: none;
+    margin-left: 30px;
+    font-size: 20px;
+}
+
+.basket-icon {
+    margin-left: 65px;
+    position: fixed;
+    bottom: 10px;
+}
+
+.basket-link {
+    text-decoration: none;
+}
+
+.basket-img {
+    background-color: rgb(252, 221, 159);
+    height: 70px;
+    width: 70px;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(111, 78, 55, 1);
+}
+
+.count-badge {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: rgb(166, 123, 91);
+    border: 0.5px solid white;
+    left: -35px;
+    top: 30px;
+}
+
+.count-badge p {
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    font-weight: bold;
+    font-size: 17px;
+}
