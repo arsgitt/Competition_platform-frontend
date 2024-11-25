@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import LOGO from '../../assets/logo.webp';
+
 
 const Navbar = () => {
     return (
@@ -7,7 +9,7 @@ const Navbar = () => {
             <div className="flex items-center space-x-4">
                 <Link to="/" className="text-xl font-semibold flex items-center gap-2">
                     <div className="w-12 h-12">
-                        <img src="/logo.webp" alt="logo"/>
+                        <img src={LOGO} alt="logo"/>
                     </div>
                     <p className="hover:text-gray-300 transition-all duration-500">Спортивные соревнования</p>
                 </Link>
@@ -17,9 +19,9 @@ const Navbar = () => {
                 <Link to="/players" className="font-semibold hover:text-gray-300 transition-all duration-500">
                     Игроки
                 </Link>
-                <Link to="#teams" className="pointer-events-none font-semibold hover:text-gray-300">
-                    Заявки
-                </Link>
+                {/*<Link to="#teams" className="pointer-events-none font-semibold hover:text-gray-300">*/}
+                {/*    Заявки*/}
+                {/*</Link>*/}
             </nav>
         </header>
     );
