@@ -1,0 +1,15 @@
+{
+  "name": "Competitions",
+  "short_name": "Competitions",
+  "start_url": "/Competition_platform-frontend",
+  "display": "standalone",
+  "background_color": "#fdfdfd",
+  "theme_color": "#db4938",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/Competition_platform-frontend/logo.webp",
+      "type": "image/png", "sizes": "800x800"
+    }
+  ]
+}
