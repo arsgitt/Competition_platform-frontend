@@ -3,6 +3,11 @@ import {Routes, Route, BrowserRouter} from 'react-router-dom';
 import HomePage from './pages/HomePage/HomePage.tsx'
 import PlayersPage from './pages/PlayersPage/PlayersPage.tsx'
 import PlayerDescriptionPage from "./pages/PlayerPage/PlayerPage.tsx";
+import LoginPage from "./pages/LoginPage.tsx";
+import RegisterPage from "./pages/RegisterPage.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
+import TeamPage from "./pages/TeamPage.tsx";
+import TeamsHistoryPage from "./pages/TeamsHistory.tsx";
 import {useEffect} from "react";
 
 
@@ -31,6 +36,11 @@ function App() {
                 <Route path="/" element={<HomePage/>} />
                 <Route path="/players" element={<PlayersPage/>} />
                 <Route path="/players/:playerId" element={<PlayerDescriptionPage/>}/>
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/register" element={<RegisterPage/>}/>
+                <Route path="/profile" element={<ProfilePage/>}/>
+                <Route path="/team/:teamId" element={<TeamPage/>}/>
+                <Route path="/teams" element={<TeamsHistoryPage/>}/>
 
             </Routes>
 
