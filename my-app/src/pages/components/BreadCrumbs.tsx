@@ -15,6 +15,11 @@ const Breadcrumbs : React.FC<BreadcrumbsProps> = ({ path }) => {
     // Соответствие между путями и их читаемыми именами
     const pathNames:PathNames = {
         players: 'Игроки',
+        teams: 'Команды',
+        profile: 'Личный кабинет',
+        manage_players: 'Управление игроками',
+        manage_teams: 'Упраление заявками',
+        form_player: 'Создание/Изменение игрока'
     };
 
     return (

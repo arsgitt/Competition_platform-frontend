@@ -1,13 +1,19 @@
-import {useEffect} from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.tsx";
 import BreadCrumbs from "../components/BreadCrumbs.tsx";
 import PALMER from '../../assets/palmer.webp';
 import JACKSON from '../../assets/jackson.webp';
 import JAMES from '../../assets/james.webp';
 import defaultImageUrl from '../../assets/npc.png';
-import {useDispatch, useSelector} from "react-redux";
-import {setInputValue, setPlayers} from "../../redux/playersSlice.tsx";
+import basket from '../../assets/basket.png';
+import { useDispatch, useSelector } from "react-redux";
+import { setInputValue, setPlayers, setCurrentTeamId, setCurrentCount } from "../../redux/playersSlice.tsx";
+import { api } from "../../api";
+import Cookies from "js-cookie";
+import axios from "axios";
+
+
 
 interface Player {
     pk: number;
@@ -21,62 +27,103 @@ interface Player {
     position: string;
     number: string;
 }
+
 const mockPlayers = [
-    { pk: 1, l_name: 'PALMER', position: 'MIDFIELDER', image_player_url: PALMER, number: '20'},
-    { pk: 2, l_name: 'JAMES', position: 'DEFENDER', image_player_url: JAMES, number: '24'},
-    { pk: 3, l_name: 'JACKSON', position: 'FORWARD', image_player_url: JACKSON, number: '15'},
+    { pk: 1, l_name: 'PALMER', position: 'MIDFIELDER', image_player_url: PALMER, number: '20' },
+    { pk: 2, l_name: 'JAMES', position: 'DEFENDER', image_player_url: JAMES, number: '24' },
+    { pk: 3, l_name: 'JACKSON', position: 'FORWARD', image_player_url: JACKSON, number: '15' },
 ];
 
 const PlayersPage = () => {
-    // const [inputValue, setInputValue] = useState('');
-    // const [players, setPlayers] = useState(mockPlayers);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     const { players, inputValue } = useSelector((state) => state.players);
+    const { currentTeamId, currentCount } = useSelector((state) => state.players);
     const dispatch = useDispatch();
-    // const [currentTeamId, setCurrentTeamId] = useState(null);
-    // const [currentCount, setCurrentCount] = useState(0);
+
+    const { isAuthenticated } = useSelector((state) => state.auth);
+
     const fetchPlayers = async () => {
-        if (players.length === 0) {
-            try {
-                const response = await fetch('http://localhost:8000/players/');
-                const PlayersData = await response.json();
-                const filteredData = PlayersData.filter((item: { pk: undefined; }) => item.pk !== undefined);
-                // const teamIdData = PlayersData.find(item => item.draft_request_id);
-                // const teamCountData = PlayersData.find(item => item.count);
-                dispatch(setPlayers(filteredData));
-                // setCurrentTeamId(teamIdData?.draft_request_id || null);
-                // setCurrentCount(teamCountData?.count || 0);
-            } catch (error) {
-                console.error('Ошибка при загрузке данных игроков:', error);
-                dispatch(setPlayers(mockPlayers));
-                // const requestData = mockPlayers.find(item => item);
-                // setCurrentTeamId(requestData?.draft_request_id || null);
-                // setCurrentCount(requestData?.count || 0);
-            }
+        try {
+            const sessionid = Cookies.get('sessionid');
+            const response = await axios.get('/unauth/players/');
+            Cookies.set('sessionid', sessionid);
+            const PlayersData = response.data.filter((item) => item.pk !== undefined);
+            console.log(PlayersData);
+            dispatch(setPlayers(PlayersData));
+        } catch (error) {
+            console.error('Ошибка при загрузке данных игроков:', error);
+            dispatch(setPlayers([]));
         }
     };
+
+    const fetchTeamCount = async () => {
+        try {
+            const response_team = await axios.get('/api/request_list/');
+            console.log(response_team);
+            const teamIdData = response_team.data.draft_request_id;
+            const teamCountData = response_team.data.count_players_in_draft;
+            dispatch(setCurrentTeamId(teamIdData));
+            dispatch(setCurrentCount(teamCountData));
+            console.log(teamCountData);
+            console.log(teamIdData);
+            // setIsAuthenticated(!!teamIdData);
+            // setIsAuthenticated(true);
+            console.log(isAuthenticated);
+        } catch (error) {
+            console.error('Ошибка при загрузке id заявки:', error);
+        }
+    };
+
     useEffect(() => {
         fetchPlayers();
-    }, []);
+        fetchTeamCount();
+    }, [dispatch]);
 
-    const handleSearch = async (l_name: { preventDefault: () => void; }) => {
-        l_name.preventDefault();
+    const handleSearch = async (event: { preventDefault: () => void; }) => {
+        event.preventDefault();
         try {
-            const response = await fetch(`http://localhost:8000/players/?l_name=${inputValue}`);
-            const result = await response.json();
-            const filteredResult = result.filter((item: { pk: undefined; }) => item.pk !== undefined);
-            dispatch(setPlayers(filteredResult));
+            const response = await api.players.playersList({
+                l_name: inputValue,
+            });
+            const filteredPlayers = response.data.filter((item) => item.pk !== undefined);
+            dispatch(setPlayers(filteredPlayers));
         } catch (error) {
             console.error('Ошибка при выполнении поиска:', error);
-            const filteredPlayers = mockPlayers.filter(player => {
-                const search_lname = inputValue
+
+            const filteredMockPlayers = mockPlayers.filter((player) => {
+                const matchesName = inputValue
                     ? player.l_name.toLowerCase().includes(inputValue.toLowerCase())
                     : true;
-                return search_lname;
+                return matchesName;
             });
-            dispatch(setPlayers(filteredPlayers))
+
+            dispatch(setPlayers(filteredMockPlayers));
         }
+    };
+
+    const handleAddPlayer = async (player_id: number) => {
+        try {
+            const csrfToken = Cookies.get('csrftoken');
+            const response = await api.players.playersAddCreate(player_id, {}, {
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            });
+
+            if (response.status === 200) {
+                const updatedTeamId = response.data.draft_request_id;
+
+                dispatch(setCurrentTeamId(updatedTeamId));
+                dispatch(setCurrentCount(currentCount + 1));
+
+                dispatch(setPlayers(players.filter(player => player.pk !== player_id)));
+            } else {
+                console.error('Ошибка при добавлении игрока: неожиданный статус ответа', response.status);
+            }
+        } catch (error) {
+            console.error('Ошибка при добавлении игрока:', error);
+        }
+        fetchPlayers();
+        fetchTeamCount();
     };
 
     return (
@@ -87,22 +134,26 @@ const PlayersPage = () => {
                 <input
                     type="text"
                     value={inputValue}
-                    onChange={(l_name) => dispatch(setInputValue(l_name.target.value))}
+                    onChange={(event) => dispatch(setInputValue(event.target.value))}
                     placeholder="Поиск..."
                     className="p-2 w-56 sm:w-3/4 h-9 border rounded-md"
                 />
-                <button type="submit"
-                        className="bg-slate-300 border-black border rounded-md w-20 sm:w-28 text-black hover:bg-slate-500 hover:text-white transition-all duration-300">Поиск
+                <button
+                    type="submit"
+                    className="bg-slate-300 border-black border rounded-md w-20 sm:w-28 text-black hover:bg-slate-500 hover:text-white transition-all duration-300"
+                >
+                    Поиск
                 </button>
             </form>
             <h2 className="sm:text-6xl text-5xl font-bold text-black ml-8">Спортсмены</h2>
             <div className="ml-4 font-arsik italic">
                 <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {players.map((player: Player) => (
-                        <li key={player.pk}
-                            className="shadow-lg transition-all duration-300 rounded-md border m-5 bg-white relative">
-                            <img src={player.image_player_url || defaultImageUrl} alt={player.l_name}
-                                 className="rounded-md w-full h-72 object-cover"
+                        <li key={player.pk} className="shadow-lg transition-all duration-300 rounded-md border m-5 bg-white relative">
+                            <img
+                                src={player.image_player_url || defaultImageUrl}
+                                alt={player.l_name}
+                                className="rounded-md w-full h-72 object-cover"
                             />
                             <Link to={`/players/${player.pk}`}>
                                 <div className="flex justify-between items-center mt-2">
@@ -113,36 +164,34 @@ const PlayersPage = () => {
                                     <div className="text-[#250cb5] text-6xl mr-5">{player.number}</div>
                                 </div>
                             </Link>
-
-                            {/*<div className="m-0 p-0">*/}
-                            {/*    <button*/}
-                            {/*        className="pointer-events-none w-full bg-white text-gray-900 border rounded mt-2 transition-all duration-500 hover:bg-[#060F1E] hover:text-white"*/}
-
-                            {/*    >*/}
-                            {/*        Добавить в заявку*/}
-                            {/*    </button>*/}
-                            {/*</div>*/}
+                            <div className="p-4">
+                                <button
+                                    onClick={() => handleAddPlayer(player.pk)}
+                                    className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all duration-300"
+                                >
+                                    Добавить
+                                </button>
+                            </div>
                         </li>
                     ))}
                 </ul>
             </div>
-            {/*<div className="fixed bottom-2 right-2">*/}
-            {/*    <Link to="#" className="no-underline pointer-events-none">*/}
-            {/*        <div className="relative">*/}
-            {/*            <img className="bg-[#FCDD9F] h-16 w-16 rounded-full shadow-lg"*/}
-            {/*                 src="/basket.png"*/}
-            {/*                 alt="store icon"/>*/}
-            {/*            <div*/}
-            {/*                className="absolute top-10 left-10 flex items-center justify-center w-6 h-6 bg-[#A67B5B] border border-white rounded-full">*/}
-            {/*                <p className="font-roboto text-white font-bold text-lg">{currentCount}</p>*/}
-            {/*            </div>*/}
-            {/*        </div>*/}
-            {/*    </Link>*/}
-            {/*</div>*/}
+            {/* Условный рендеринг корзины */}
+            {isAuthenticated && currentCount > 0 && (
+                <div className="fixed bottom-2 right-2">
+                    <Link to={`/team/${currentTeamId}/`} className="no-underline">
+                        <div className="relative">
+                            <img className="bg-[#FCDD9F] h-16 w-16 rounded-full shadow-lg" src={basket} alt="store icon"/>
+                            <div
+                                className="absolute top-10 left-10 flex items-center justify-center w-6 h-6 bg-[#A67B5B] border border-white rounded-full">
+                                <p className="font-roboto text-white font-bold text-lg">{currentCount}</p>
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            )}
         </div>
-
-    )
-}
-
+    );
+};
 
 export default PlayersPage;

@@ -14,6 +14,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/"),
       },
+      "/unauth": {
+        target: "http://localhost:8001",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/unauth/, "/"),
+      },
     },
   },
 });
