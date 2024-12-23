@@ -39,7 +39,7 @@ const PlayerDescriptionPage = () => {
 
     const fetchPlayer = async () => {
         try {
-            const response = await fetch(`/unauth/players/${playerId}/`);
+            const response = await fetch(`/api/players/${playerId}/`);
 
             if (!response.ok) {
                 throw new Error('Ошибка при загрузке данных');
