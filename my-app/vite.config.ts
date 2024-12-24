@@ -7,7 +7,7 @@ export default defineConfig({
   base: "/Competition_platform-frontend",
   server: {
     host: "0.0.0.0",
-    port: 5174,
+    port: 5173,
     proxy: {
       "/api": {
         target: "http://localhost:8000",

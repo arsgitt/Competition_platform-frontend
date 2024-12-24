@@ -56,7 +56,7 @@ const TeamsHistoryPage = () => {
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
                                     <div className="text-center">
-                                        <span className="font-semibold block">Номер заявки</span>
+                                        <span className="font-semibold block">Номер команды</span>
                                         {team.pk}
                                     </div>
                                     <div className="text-center">
