@@ -58,13 +58,13 @@ const Navbar = () => {
         if (!isAuthenticated) {
             return (
                 <>
-                    <Link to="/players" className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">
+                    <Link to="/players" className="text-black hover:text-gray-600 py-2 px-6">
                         Игроки
                     </Link>
-                    <Link to="/login" className="inline-block py-2 px-6 bg-white text-black rounded-md hover:bg-gray-100">
+                    <Link to="/login" className="text-black hover:text-gray-600 py-2 px-6">
                         Вход
                     </Link>
-                    <Link to="/register" className="inline-block py-2 px-6 bg-black text-white rounded-md hover:bg-gray-800">
+                    <Link to="/register" className="text-black hover:text-gray-600 py-2 px-6">
                         Регистрация
                     </Link>
                 </>
@@ -72,15 +72,15 @@ const Navbar = () => {
         } else if (is_staff === 'True') {
             return (
                 <>
-                    <Link to="/manage-players" className="bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600">
+                    <Link to="/manage-players" className="text-black hover:text-gray-600 py-2 px-6">
                         Управление игроками
                     </Link>
-                    <Link to="/manage-teams" className="bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600">
+                    <Link to="/manage-teams" className="text-black hover:text-gray-600 py-2 px-6">
                         Управление заявками
                     </Link>
                     <button
                         onClick={handleLogout}
-                        className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600 focus:outline-none"
+                        className="text-black hover:text-gray-600 py-2 px-6 focus:outline-none"
                     >
                         Выйти
                     </button>
@@ -89,18 +89,18 @@ const Navbar = () => {
         } else {
             return (
                 <>
-                    <Link to="/players" className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">
+                    <Link to="/players" className="text-black hover:text-gray-600 py-2 px-6">
                         Игроки
                     </Link>
-                    <Link to="/teams" className="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600">
+                    <Link to="/teams" className="text-black hover:text-gray-600 py-2 px-6">
                         Заявки
                     </Link>
-                    <Link to="/profile" className="bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600">
+                    <Link to="/profile" className="text-black hover:text-gray-600 py-2 px-6">
                         Личный кабинет ({username})
                     </Link>
                     <button
                         onClick={handleLogout}
-                        className="bg-red-500 text-white py-2 px-6 rounded-md hover:bg-red-600 focus:outline-none"
+                        className="text-black hover:text-gray-600 py-2 px-6 focus:outline-none"
                     >
                         Выйти
                     </button>

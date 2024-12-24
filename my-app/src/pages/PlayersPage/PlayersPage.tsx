@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar.tsx";
 import BreadCrumbs from "../components/BreadCrumbs.tsx";
@@ -8,10 +8,8 @@ import JAMES from '../../assets/james.webp';
 import defaultImageUrl from '../../assets/npc.png';
 import basket from '../../assets/basket.png';
 import { useDispatch, useSelector } from "react-redux";
-import { setInputValue, setPlayers, setCurrentTeamId, setCurrentCount } from "../../redux/playersSlice.tsx";
-import { api } from "../../api";
-import Cookies from "js-cookie";
-import axios from "axios";
+import { fetchPlayers, fetchTeamCount, searchPlayers, addPlayer, setInputValue } from "../../redux/playersSlice";
+
 
 
 
@@ -35,95 +33,22 @@ const mockPlayers = [
 ];
 
 const PlayersPage = () => {
-    const { players, inputValue } = useSelector((state) => state.players);
-    const { currentTeamId, currentCount } = useSelector((state) => state.players);
+    const { players, inputValue, currentTeamId, currentCount, status, error } = useSelector((state) => state.players);
+    const { isAuthenticated } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
 
-    const { isAuthenticated } = useSelector((state) => state.auth);
-
-    const fetchPlayers = async () => {
-        try {
-            const sessionid = Cookies.get('sessionid');
-            const response = await axios.get('/unauth/players/');
-            Cookies.set('sessionid', sessionid);
-            const PlayersData = response.data.filter((item) => item.pk !== undefined);
-            console.log(PlayersData);
-            dispatch(setPlayers(PlayersData));
-        } catch (error) {
-            console.error('Ошибка при загрузке данных игроков:', error);
-            dispatch(setPlayers([]));
-        }
-    };
-
-    const fetchTeamCount = async () => {
-        try {
-            const response_team = await axios.get('/api/request_list/');
-            console.log(response_team);
-            const teamIdData = response_team.data.draft_request_id;
-            const teamCountData = response_team.data.count_players_in_draft;
-            dispatch(setCurrentTeamId(teamIdData));
-            dispatch(setCurrentCount(teamCountData));
-            console.log(teamCountData);
-            console.log(teamIdData);
-            // setIsAuthenticated(!!teamIdData);
-            // setIsAuthenticated(true);
-            console.log(isAuthenticated);
-        } catch (error) {
-            console.error('Ошибка при загрузке id заявки:', error);
-        }
-    };
-
     useEffect(() => {
-        fetchPlayers();
-        fetchTeamCount();
+        dispatch(fetchPlayers());
+        dispatch(fetchTeamCount());
     }, [dispatch]);
 
-    const handleSearch = async (event: { preventDefault: () => void; }) => {
+    const handleSearch = (event) => {
         event.preventDefault();
-        try {
-            const response = await api.players.playersList({
-                l_name: inputValue,
-            });
-            const filteredPlayers = response.data.filter((item) => item.pk !== undefined);
-            dispatch(setPlayers(filteredPlayers));
-        } catch (error) {
-            console.error('Ошибка при выполнении поиска:', error);
-
-            const filteredMockPlayers = mockPlayers.filter((player) => {
-                const matchesName = inputValue
-                    ? player.l_name.toLowerCase().includes(inputValue.toLowerCase())
-                    : true;
-                return matchesName;
-            });
-
-            dispatch(setPlayers(filteredMockPlayers));
-        }
+        dispatch(searchPlayers(inputValue));
     };
 
-    const handleAddPlayer = async (player_id: number) => {
-        try {
-            const csrfToken = Cookies.get('csrftoken');
-            const response = await api.players.playersAddCreate(player_id, {}, {
-                headers: {
-                    'X-CSRFToken': csrfToken
-                }
-            });
-
-            if (response.status === 200) {
-                const updatedTeamId = response.data.draft_request_id;
-
-                dispatch(setCurrentTeamId(updatedTeamId));
-                dispatch(setCurrentCount(currentCount + 1));
-
-                dispatch(setPlayers(players.filter(player => player.pk !== player_id)));
-            } else {
-                console.error('Ошибка при добавлении игрока: неожиданный статус ответа', response.status);
-            }
-        } catch (error) {
-            console.error('Ошибка при добавлении игрока:', error);
-        }
-        fetchPlayers();
-        fetchTeamCount();
+    const handleAddPlayer = (playerId) => {
+        dispatch(addPlayer(playerId));
     };
 
     return (
