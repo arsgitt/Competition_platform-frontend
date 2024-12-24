@@ -27,12 +27,6 @@ const TeamsHistoryPage = () => {
             }
         }
     };
-    const statusteams = {
-        formed: 'Сформирована',
-        completed: 'Завершена',
-        draft: 'Черновик',
-        deleted: 'Удалена'
-    };
 
     useEffect(() => {
         fetchTeams();
@@ -67,18 +61,18 @@ const TeamsHistoryPage = () => {
                                     </div>
                                     <div className="text-center">
                                         <span className="font-semibold block">Статус</span>
-                                        {statusteams[team.status]}
+                                        {team.status}
                                     </div>
                                     <div className="text-center">
-                                        <span className="font-semibold block">Смодерирована</span>
-                                        {team.updated_at != null
-                                            ? new Date(team.updated_at).toLocaleDateString('ru-RU')
+                                        <span className="font-semibold block">Дата формирования</span>
+                                        {team.formed_at != null
+                                            ? new Date(team.formed_at).toLocaleString()
                                             : '-'}
                                     </div>
                                     <div className="text-center">
                                         <span className="font-semibold block">Дата завершения</span>
-                                        {team.completed_at != null
-                                            ? new Date(team.completed_at).toLocaleDateString('ru-RU')
+                                        {team.ended_at != null
+                                            ? new Date(team.ended_at).toLocaleString()
                                             : '-'}
                                     </div>
                                     <div className="text-center">
@@ -87,7 +81,7 @@ const TeamsHistoryPage = () => {
                                     </div>
                                     <div className="text-center">
                                         <span className="font-semibold block">Болельщики</span>
-                                        {team.count_fans}
+                                        {team.count_fans || 0}
                                     </div>
                                     <div className="col-span-2 text-center">
                                         <Link
@@ -108,4 +102,3 @@ const TeamsHistoryPage = () => {
 };
 
 export default TeamsHistoryPage;
-//coments

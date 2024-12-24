@@ -16,8 +16,8 @@ import {
 const Navbar = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { isAuthenticated, username } = useSelector((state) => state.auth); // Получаем данные о пользователе из Redux состояния
-    const [isMenuOpen, setIsMenuOpen] = useState(false); // Состояние для мобильного меню
+    const { isAuthenticated, username, is_staff } = useSelector((state) => state.auth); // Добавлено поле isModerator
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Функция открытия/закрытия меню
     const toggleMenu = () => {
@@ -29,11 +29,11 @@ const Navbar = () => {
         e.preventDefault();
 
         try {
-            const csrfToken = Cookies.get('csrftoken'); // Получаем CSRF токен из cookies
+            const csrfToken = Cookies.get('csrftoken');
 
             const response = await axios.post('/api/logout/', {}, {
                 headers: {
-                    'X-CSRFToken': csrfToken, // Подставляем CSRF токен в заголовок запроса
+                    'X-CSRFToken': csrfToken,
                     'Content-Type': 'application/json',
                 }
             });
@@ -43,17 +43,75 @@ const Navbar = () => {
                 dispatch(setInputValue(''));
                 dispatch(setCurrentTeamId(null));
                 dispatch(setCurrentCount(0));
-                dispatch(logout()); // Вызываем экшен для логута в Redux
-                navigate('/login'); // Перенаправляем на страницу логина
+                dispatch(logout());
+                Cookies.remove('is_staff');
+                navigate('/login');
             }
         } catch (error) {
             console.error('Ошибка при выходе:', error);
             alert('Ошибка при выходе. Пожалуйста, попробуйте позже.');
         }
     };
+
+    // Генерация навигационных ссылок
+    const renderNavLinks = () => {
+        if (!isAuthenticated) {
+            return (
+                <>
+                    <Link to="/players" className="text-black hover:text-gray-600 py-2 px-6">
+                        Игроки
+                    </Link>
+                    <Link to="/login" className="text-black hover:text-gray-600 py-2 px-6">
+                        Вход
+                    </Link>
+                    <Link to="/register" className="text-black hover:text-gray-600 py-2 px-6">
+                        Регистрация
+                    </Link>
+                </>
+            );
+        } else if (is_staff === 'True') {
+            return (
+                <>
+                    <Link to="/manage-players" className="text-black hover:text-gray-600 py-2 px-6">
+                        Управление игроками
+                    </Link>
+                    <Link to="/manage-teams" className="text-black hover:text-gray-600 py-2 px-6">
+                        Управление заявками
+                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="text-black hover:text-gray-600 py-2 px-6 focus:outline-none"
+                    >
+                        Выйти
+                    </button>
+                </>
+            );
+        } else {
+            return (
+                <>
+                    <Link to="/players" className="text-black hover:text-gray-600 py-2 px-6">
+                        Игроки
+                    </Link>
+                    <Link to="/teams" className="text-black hover:text-gray-600 py-2 px-6">
+                        Заявки
+                    </Link>
+                    <Link to="/profile" className="text-black hover:text-gray-600 py-2 px-6">
+                        Личный кабинет ({username})
+                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="text-black hover:text-gray-600 py-2 px-6 focus:outline-none"
+                    >
+                        Выйти
+                    </button>
+                </>
+            );
+        }
+    };
+
     return (
         <header className="text-white py-4 px-6 flex justify-between items-center font-roboto">
-            {/* Логотип и заголовок */}
+            {/* Логотип */}
             <div className="flex items-center space-x-4">
                 <Link to="/" className="text-xl font-semibold flex items-center gap-2">
                     <div className="w-12 h-12">
@@ -67,34 +125,7 @@ const Navbar = () => {
 
             {/* Навигация */}
             <nav className="hidden md:flex space-x-4">
-                <Link to="/players" className="text-black hover:text-gray-300 duration-300 cursor-pointer">
-                    Игроки
-                </Link>
-                {isAuthenticated ? (
-                    <>
-                        <Link to="/teams" className="text-black hover:text-gray-300 duration-300 cursor-pointer">
-                            Заявки
-                        </Link>
-                        <Link to="/profile" className="text-black hover:text-gray-300 duration-300 cursor-pointer">
-                            Личный кабинет ({username})
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="text-black hover:text-gray-300 duration-300 cursor-pointer"
-                        >
-                            Выйти
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login" className="text-black hover:text-gray-300 duration-300 cursor-pointer">
-                            Вход
-                        </Link>
-                        <Link to="/register" className="text-black hover:text-gray-300 duration-300 cursor-pointer">
-                            Регистрация
-                        </Link>
-                    </>
-                )}
+                {renderNavLinks()}
             </nav>
 
             {/* Кнопка мобильного меню */}
@@ -104,48 +135,19 @@ const Navbar = () => {
 
             {/* Мобильное меню */}
             <div
-                className={`md:hidden fixed top-0 right-0 h-full w-64 bg-gray-400 transform transition-transform duration-300 ease-in-out ${
+                className={`md:hidden fixed top-0 right-0 h-full w-64 bg-gray-400 transform transition-transform duration-300 ease-in-out z-50 ${
                     isMenuOpen ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
                 <div className="flex flex-col h-full p-4 mt-3">
                     <button className="self-start mb-7" onClick={toggleMenu}>
-                        <img src={menu} alt="menu2" className="w-6 h-6" />
+                        <img src={menu} alt="menu2" className="w-6 h-6"/>
                     </button>
-                    <Link to="/players" className="text-white mb-2 cursor-pointer">
-                        Игроки
-                    </Link>
-                    {isAuthenticated ? (
-                        <>
-                            <Link to="/teams" className="text-white mb-2 cursor-pointer">
-                                Заявки
-                            </Link>
-                            <Link to="/profile" className="text-white mb-7 cursor-pointer">
-                                Личный кабинет ({username})
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="block py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none cursor-pointer"
-                            >
-                                Выйти
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/login" className="block py-2 hover:text-gray-300 mt-5 cursor-pointer">
-                                Вход
-                            </Link>
-                            <Link to="/register" className="block py-2 hover:text-gray-300 cursor-pointer">
-                                Регистрация
-                            </Link>
-                        </>
-                    )}
+                    {renderNavLinks()}
                 </div>
             </div>
         </header>
     );
-
-
 };
 
 export default Navbar;
