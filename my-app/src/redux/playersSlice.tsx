@@ -4,12 +4,25 @@ import { api, unauthApi } from '../api';
 import Cookies from 'js-cookie';
 
 const initialState = {
+    player: {
+        f_name: '',
+        l_name: '',
+        date_birthday: '',
+        image_player_url: '',
+        birth_place: '',
+        weight: 0,
+        height: 0,
+        position: '',
+        number: 0,
+    },
+    loading: false,
+    error: null,
     inputValue: '',
     players: [],
+    currentPlayer: null,
     currentTeamId: null,
     currentCount: 0,
     status: 'idle', // idle | loading | succeeded | failed
-    error: null,
 };
 
 // Async thunks
@@ -24,6 +37,22 @@ export const fetchPlayers = createAsyncThunk('players/fetchPlayers', async (_, {
     }
 });
 
+export const fetchPlayerById = createAsyncThunk(
+    'players/fetchPlayerById',
+    async (playerId: string, { rejectWithValue }) => {
+        try {
+            const response = await unauthApi.players.playersRead(playerId); // Предположим, что есть такой метод
+            if (!response) {
+                throw new Error('Ошибка при загрузке данных');
+            }
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.message || 'Ошибка при загрузке данных');
+        }
+    }
+);
+
+
 export const fetchTeamCount = createAsyncThunk('players/fetchTeamCount', async (_, { rejectWithValue }) => {
     try {
         const response = await api.requestList.requestListList();
@@ -36,7 +65,7 @@ export const fetchTeamCount = createAsyncThunk('players/fetchTeamCount', async (
 
 export const searchPlayers = createAsyncThunk('players/searchPlayers', async (inputValue, { rejectWithValue }) => {
     try {
-        const response = await api.players.playersList({ l_name: inputValue });
+        const response = await unauthApi.players.playersList({ l_name: inputValue });
         return response.data.filter((item) => item.pk !== undefined);
     } catch (error) {
         return rejectWithValue(error.message);
@@ -65,6 +94,57 @@ export const addPlayer = createAsyncThunk('players/addPlayer', async (playerId, 
         return rejectWithValue(error.message);
     }
 });
+
+// Fetch player data
+export const fetchPlayer = createAsyncThunk(
+    'players/fetchPlayer',
+    async (id, { rejectWithValue }) => {
+        try {
+            const sessionid = Cookies.get('sessionid');
+            const response = await unauthApi.players.playersRead(id);
+            Cookies.set('sessionid', sessionid);
+            return response.data;
+        } catch (err) {
+            if (err.response?.status === 403) {
+                return rejectWithValue('Forbidden');
+            } else if (err.response?.status === 404) {
+                return rejectWithValue('Not Found');
+            }
+            return rejectWithValue('Failed to load player data.');
+        }
+    }
+);
+
+// Create or update player
+export const savePlayer = createAsyncThunk(
+    'players/savePlayer',
+    async (playerData, { rejectWithValue, getState }) => {
+        try {
+            const { id, player } = playerData;
+            let response;
+            if (id) {
+                // Update player
+                response = await api.players.playersUpdateUpdate(id, player, {
+                    headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
+                });
+            } else {
+                // Create player
+                response = await api.players.playersCreateCreate(player, {
+                    headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
+                });
+            }
+            return response.data;
+        } catch (err) {
+            if (err.response?.status === 403) {
+                return rejectWithValue('Forbidden');
+            } else if (err.response?.status === 404) {
+                return rejectWithValue('Not Found');
+            }
+            return rejectWithValue('Failed to save player.');
+        }
+    }
+);
+
 
 const playersSlice = createSlice({
     name: 'players',
@@ -97,6 +177,18 @@ const playersSlice = createSlice({
                 state.status = 'failed';
                 state.error = action.payload;
             })
+            // fetchPlayerById
+            .addCase(fetchPlayerById.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchPlayerById.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.currentPlayer = action.payload; // Создать поле для текущего игрока
+            })
+            .addCase(fetchPlayerById.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
+            })
             // fetchTeamCount
             .addCase(fetchTeamCount.fulfilled, (state, action) => {
                 state.currentTeamId = action.payload.draft_request_id;
@@ -120,7 +212,33 @@ const playersSlice = createSlice({
             })
             .addCase(addPlayer.rejected, (state, action) => {
                 state.error = action.payload;
+            })
+            // Handle fetch player
+            .addCase(fetchPlayer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchPlayer.fulfilled, (state, action) => {
+                state.loading = false;
+                state.player = action.payload;
+            })
+            .addCase(fetchPlayer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            // Handle save player
+            .addCase(savePlayer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(savePlayer.fulfilled, (state) => {
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(savePlayer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
+
     },
 });
 

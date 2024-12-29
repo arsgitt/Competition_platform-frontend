@@ -1,20 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { logout } from '../redux/authSlice';
+import { updateProfileAsync} from '../redux/authSlice';
 import Navbar from './components/Navbar';
 import BreadCrumbs from './components/BreadCrumbs';
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import user from '../assets/user.png';
 
 const ProfilePage = () => {
-    const { username, isAuthenticated } = useSelector((state) => state.auth);
+    const { username, isAuthenticated, status, error, success } = useSelector((state) => state.auth);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -24,39 +19,19 @@ const ProfilePage = () => {
         }
     }, [isAuthenticated, navigate]);
 
-    const handleProfileUpdate = async (e) => {
+    const handleProfileUpdate = (e: React.FormEvent) => {
         e.preventDefault();
 
-        try {
-            const csrfToken = Cookies.get('csrftoken');
-            const data = {};
+        const data: { email?: string; password?: string } = {};
+        if (email) data.email = email;
+        if (password) data.password = password;
 
-            if (email) data.email = email;
-            if (password) data.password = password;
-
-            if (Object.keys(data).length === 0) {
-                setError('Необходимо ввести хотя бы один параметр для обновления.');
-                setSuccess('');
-                return;
-            }
-
-            const response = await axios.put('/api/profile/', data, {
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.status === 200) {
-                setSuccess('Профиль обновлен успешно');
-                setError('');
-                dispatch(logout());
-            }
-        } catch (error) {
-            console.error('Ошибка при обновлении профиля:', error);
-            setError('Ошибка при обновлении данных профиля');
-            setSuccess('');
+        if (Object.keys(data).length === 0) {
+            alert('Необходимо ввести хотя бы один параметр для обновления.');
+            return;
         }
+
+        dispatch(updateProfileAsync(data));
     };
 
     return (
@@ -78,6 +53,7 @@ const ProfilePage = () => {
                     <form onSubmit={handleProfileUpdate} className="mt-6 space-y-4">
                         {error && <div className="text-red-500 text-center">{error}</div>}
                         {success && <div className="text-green-500 text-center">{success}</div>}
+                        {status === 'loading' && <div className="text-blue-500 text-center">Обновление...</div>}
 
                         <div>
                             <label htmlFor="email" className="block text-gray-600 text-sm mb-1">

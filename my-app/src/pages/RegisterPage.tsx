@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { login } from '../redux/authSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { registerAsync } from '../redux/authSlice';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.webp';
 
@@ -8,30 +8,17 @@ const RegistrationPage = () => {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { status, error } = useSelector((state) => state.auth);
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleRegister = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const response = await fetch('/api/register/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, username, password }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                dispatch(login({ username: data.username, is_staff: false }));
+        dispatch(registerAsync({ email, username, password })).then((result) => {
+            if (result.meta.requestStatus === 'fulfilled') {
                 navigate('/login');
-            } else {
-                setError('Ошибка регистрации. Пожалуйста, проверьте введенные данные.');
             }
-        } catch (error) {
-            console.error('Ошибка при регистрации:', error);
-            alert('Ошибка при регистрации. Пожалуйста, попробуйте позже.');
-        }
+        });
     };
 
     return (
@@ -44,7 +31,7 @@ const RegistrationPage = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-center mb-6 text-gray-700">Регистрация</h2>
                 <form onSubmit={handleRegister} className="space-y-4">
-                    {error && <div className="text-red-500 text-center">{error}</div>}
+                    {status === 'failed' && <div className="text-red-500 text-center">{error}</div>}
                     <div>
                         <label htmlFor="email" className="block text-gray-600 text-sm mb-1">Электронная почта</label>
                         <input
@@ -85,7 +72,7 @@ const RegistrationPage = () => {
                         type="submit"
                         className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-all duration-300"
                     >
-                        Зарегистрироваться
+                        {status === 'loading' ? 'Загрузка...' : 'Зарегистрироваться'}
                     </button>
                 </form>
                 <div className="mt-6 text-center text-sm text-gray-600">

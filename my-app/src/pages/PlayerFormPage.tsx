@@ -1,86 +1,37 @@
+// src/components/PlayerFormPage.js
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { api } from '../api';
-import Cookies from 'js-cookie';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPlayer, savePlayer } from '../redux/playersSlice';
 import Navbar from './components/Navbar';
 import BreadCrumbs from './components/BreadCrumbs';
-import axios from "axios";
 
 const PlayerFormPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [player, setPlayer] = useState({
-        f_name: '',
-        l_name: '',
-        date_birthday: '',
-        image_player_url: '',
-        birth_place: '',
-        weight: 0,
-        height: 0,
-        position: '',
-        number: 0
-    });
-    const [loading, setLoading] = useState(!!id);
-    const [error, setError] = useState('');
+    const dispatch = useDispatch();
+    const { player, loading, error } = useSelector((state) => state.players);
+    const [formData, setFormData] = useState(player);
 
     useEffect(() => {
         if (id) {
-            const fetchPlayer = async () => {
-                setLoading(true);
-                try {
-                    const sessionid = Cookies.get('sessionid');
-                    const response = await axios.get(`/unauth/players/${id}/`);
-                    Cookies.set('sessionid', sessionid);
-                    setPlayer(response.data);
-                } catch (err) {
-                    console.error('Error loading player:', err);
-                    if (err.response?.status === 403) {
-                        navigate('/403');
-                    } else if (err.response?.status === 404) {
-                        navigate('/404');
-                    } else {
-                        setError('Failed to load player data.');
-                    }
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            fetchPlayer();
+            dispatch(fetchPlayer(id));
         }
-    }, [id, navigate]);
+    }, [id, dispatch]);
+
+    useEffect(() => {
+        setFormData(player);
+    }, [player]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setPlayer((prev) => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        setError('');
-        try {
-            if (id) {
-                // Update player
-                await api.players.playersUpdateUpdateUpdate(id, player, {
-                    headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
-                });
-            } else {
-                // Create player
-                await api.players.playersCreateCreate(player, {
-                    headers: { 'X-CSRFToken': Cookies.get('csrftoken') },
-                });
-            }
-            navigate('/manage-players');
-        } catch (err) {
-            console.error('Error saving player:', err);
-            if (err.response?.status === 403) {
-                navigate('/403');
-            } else if (err.response?.status === 404) {
-                navigate('/404');
-            } else {
-                setError('Failed to save player. Please check your inputs.');
-            }
-        }
+        dispatch(savePlayer({ id, player: formData }));
+        navigate('/manage-players');
     };
 
     return (

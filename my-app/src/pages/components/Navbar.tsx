@@ -1,22 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
-import LOGO from '../../assets/logo.webp'; // Логотип
-import menu from '../../assets/menu2.png'; // Иконка меню
+import LOGO from '../../assets/logo.webp';
+import menu from '../../assets/menu2.png';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from "../../redux/authSlice";
-import Cookies from "js-cookie";
-import axios from 'axios';
+import { logoutAsync } from '../../redux/authSlice';
 import { useState } from 'react';
 import {
     setPlayers,
     setInputValue,
     setCurrentCount,
-    setCurrentTeamId
-} from "../../redux/playersSlice";
+    setCurrentTeamId,
+} from '../../redux/playersSlice';
 
 const Navbar = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { isAuthenticated, username, is_staff } = useSelector((state) => state.auth); // Добавлено поле isModerator
+    const { isAuthenticated, username, is_staff } = useSelector((state) => state.auth);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Функция открытия/закрытия меню
@@ -25,32 +23,21 @@ const Navbar = () => {
     };
 
     // Функция для выхода
-    const handleLogout = async (e) => {
+    const handleLogout = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        try {
-            const csrfToken = Cookies.get('csrftoken');
-
-            const response = await axios.post('/api/logout/', {}, {
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (response.status === 204) {
+        dispatch(logoutAsync())
+            .unwrap()
+            .then(() => {
                 dispatch(setPlayers([]));
                 dispatch(setInputValue(''));
                 dispatch(setCurrentTeamId(null));
                 dispatch(setCurrentCount(0));
-                dispatch(logout());
-                Cookies.remove('is_staff');
                 navigate('/login');
-            }
-        } catch (error) {
-            console.error('Ошибка при выходе:', error);
-            alert('Ошибка при выходе. Пожалуйста, попробуйте позже.');
-        }
+            })
+            .catch((error) => {
+                console.error('Ошибка при выходе:', error);
+                alert('Ошибка при выходе. Пожалуйста, попробуйте позже.');
+            });
     };
 
     // Генерация навигационных ссылок
@@ -124,9 +111,7 @@ const Navbar = () => {
             </div>
 
             {/* Навигация */}
-            <nav className="hidden md:flex space-x-4">
-                {renderNavLinks()}
-            </nav>
+            <nav className="hidden md:flex space-x-4">{renderNavLinks()}</nav>
 
             {/* Кнопка мобильного меню */}
             <button className="md:hidden" onClick={toggleMenu}>
@@ -141,7 +126,7 @@ const Navbar = () => {
             >
                 <div className="flex flex-col h-full p-4 mt-3">
                     <button className="self-start mb-7" onClick={toggleMenu}>
-                        <img src={menu} alt="menu2" className="w-6 h-6"/>
+                        <img src={menu} alt="menu2" className="w-6 h-6" />
                     </button>
                     {renderNavLinks()}
                 </div>

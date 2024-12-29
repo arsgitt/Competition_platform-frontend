@@ -1,12 +1,14 @@
 import {useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import { useEffect } from "react";
 import Navbar from "../components/Navbar.tsx";
 import BreadCrumbs from "../components/BreadCrumbs.tsx";
-// import BreadCrumbs from "./components/BreadCrumbs.tsx";
 import PALMER from '../../assets/palmer.webp';
 import JACKSON from '../../assets/jackson.webp';
 import JAMES from '../../assets/james.webp';
 import  defaultImageUrl from '../../assets/npc.png';
+
+import { fetchPlayerById } from '../../redux/playersSlice';
+import {useDispatch, useSelector} from "react-redux";
 
 interface Player {
     id: number;
@@ -33,46 +35,22 @@ const mockPlayers: Player[] = [
 
 const PlayerDescriptionPage = () => {
     const { playerId } = useParams();
-    const [player, setPlayer] = useState<Player | null>(null);
-    const [loading, setLoading] = useState(true); // Для отображения состояния загрузки
-    const [error, setError] = useState(""); // Для обработки ошибок
+    const dispatch = useDispatch();
+    const player = useSelector((state) => state.players.currentPlayer);
+    const status = useSelector((state) => state.players.status);
+    const error = useSelector((state) => state.players.error);
 
-    const fetchPlayer = async () => {
-        try {
-            const response = await fetch(`/api/players/${playerId}/`);
-
-            if (!response.ok) {
-                throw new Error('Ошибка при загрузке данных');
-            }
-
-            const playerData = await response.json();
-            setPlayer(playerData);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (err) {
-            // Если произошла ошибка, используем мок-данные
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            const mockPlayer = mockPlayers.find(item => item.id === parseInt(playerId, 10));
-
-            if (mockPlayer) {
-                setPlayer(mockPlayer);
-            } else {
-                setError('Игрок не найден');
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
     useEffect(() => {
-        fetchPlayer();
-    }, [playerId]);
+        if (playerId) {
+            dispatch(fetchPlayerById(playerId));
+        }
+    }, [playerId, dispatch]);
 
-    // Обработка состояния загрузки и ошибок
-    if (loading) {
+    if (status === 'loading') {
         return <div className="text-center my-5">Загрузка данных игрока...</div>;
     }
 
-    if (error) {
+    if (status === 'failed') {
         return <div className="text-danger text-center my-5">Ошибка: {error}</div>;
     }
 
