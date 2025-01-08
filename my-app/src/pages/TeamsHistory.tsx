@@ -48,36 +48,44 @@ const TeamsHistoryPage = () => {
                                     key={team.pk}
                                     className="bg-slate-600 text-gray-300 rounded p-4 shadow-md hover:bg-[#333A4E] transition"
                                 >
-                                    <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
-                                        <div className="text-center">
+                                    <div className="grid grid-cols-1 md:grid-cols-9 gap-2 items-center">
+                                        <div className="text-center h-full flex flex-col justify-center">
                                             <span className="font-semibold block">Номер заявки</span>
-                                            {team.pk}
+                                            {team.pk || '-'}
                                         </div>
-                                        <div className="text-center">
+                                        <div className="text-center h-full flex flex-col justify-center">
+                                            <span className="font-semibold block">Команда</span>
+                                            {team.name_team || '-'}
+                                        </div>
+                                        <div className="text-center h-full flex flex-col justify-center">
+                                            <span className="font-semibold block">Турнир</span>
+                                            {team.competition || '-'}
+                                        </div>
+                                        <div className="text-center h-full flex flex-col justify-center">
                                             <span className="font-semibold block">Статус</span>
-                                            {statusteams[team.status]}
+                                            {statusteams[team.status] || '-'}
                                         </div>
-                                        <div className="text-center">
+                                        <div className="text-center h-full flex flex-col justify-center">
                                             <span className="font-semibold block">Смодерирована</span>
                                             {team.updated_at != null
                                                 ? new Date(team.updated_at).toLocaleDateString('ru-RU')
                                                 : '-'}
                                         </div>
-                                        <div className="text-center">
-                                            <span className="font-semibold block">Дата завершения</span>
+                                        <div className="text-center h-full flex flex-col justify-center">
+                                            <span className="font-semibold block">Завершена</span>
                                             {team.completed_at != null
                                                 ? new Date(team.completed_at).toLocaleDateString('ru-RU')
                                                 : '-'}
                                         </div>
-                                        <div className="text-center">
+                                        <div className="text-center h-full flex flex-col justify-center">
                                             <span className="font-semibold block">Создатель</span>
-                                            {team.username}
+                                            {team.username || '-'}
                                         </div>
-                                        <div className="text-center">
+                                        <div className="text-center mt-0">
                                             <span className="font-semibold block">Болельщики</span>
-                                            {team.count_fans}
+                                            {team.count_fans != null ? team.count_fans : ''}
                                         </div>
-                                        <div className="col-span-2 text-center">
+                                        <div className="text-center h-full flex flex-col justify-center">
                                             <Link
                                                 to={`/team/${team.pk}`}
                                                 className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"

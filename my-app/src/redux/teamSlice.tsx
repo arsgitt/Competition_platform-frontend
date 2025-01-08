@@ -33,7 +33,8 @@ export const fetchTeamData = createAsyncThunk(
     async (teamId, { rejectWithValue }) => {
         try {
             const response = await api.team.teamRead(teamId);
-            return response;
+            console.log(response)
+            return response.data;
         } catch (error) {
             return rejectWithValue("Заявка не найдена");
         }
@@ -46,11 +47,11 @@ export const updateTournament = createAsyncThunk(
     async ({ teamId, competition, nameTeam, dateCompetition }, { rejectWithValue }) => {
         try {
             const response = await api.team.teamUpdate(teamId, {
-                competition,
+                competition: competition,
                 name_team: nameTeam,
                 date_competition: dateCompetition,
             });
-            return response;
+            return response.data;
         } catch (error) {
             return rejectWithValue(error.message);
         }
