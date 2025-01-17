@@ -80,7 +80,7 @@ const Navbar = () => {
                         Игроки
                     </Link>
                     <Link to="/teams" className="text-black hover:text-gray-600 py-2 px-6">
-                        Заявки
+                        Команды
                     </Link>
                     <Link to="/profile" className="text-black hover:text-gray-600 py-2 px-6">
                         Личный кабинет ({username})
