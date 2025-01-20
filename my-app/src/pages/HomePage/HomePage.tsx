@@ -12,7 +12,7 @@ const HomePage =  () => {
             <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
                 <div className="bg-slate-400 rounded-md shadow-lg sm:w-2/5 sm:h-2/5 w-5/6 h-1/3 flex flex-col items-center justify-center text-center">
                     <h2 className="shadow-amber-400 bg-clip-text text-slate-800 text-4xl font-bold mb-4">
-                        Спортивные соревнования
+                        Спортивные меропрития
                     </h2>
                     <p className="text-white mb-6 max-w-md">
                         Собери команду мечты и побеждай!
